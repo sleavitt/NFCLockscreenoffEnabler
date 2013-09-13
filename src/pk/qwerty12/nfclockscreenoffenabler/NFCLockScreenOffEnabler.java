@@ -46,9 +46,34 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 	
 	int mTagLostSound;
 	
+	private boolean mDebugMode = true;
+	
+	private void log(String TAG, String message) {
+		if (!mDebugMode)
+			return;
+		
+		Log.d(TAG, message);
+	}
+	
 	//Hook for NfcNativeTag$PresenceCheckWatchdog.run()
 	class PresenceCheckWatchdogRunHook extends XC_MethodHook
 	{
+		@Override
+		protected void beforeHookedMethod(MethodHookParam param)
+				throws Throwable {
+			{
+				if (!prefs.getBoolean(Common.PREF_TAGLOST, true)) {
+					return;
+				}
+
+				if (prefs.getBoolean(Common.PREF_LOCKED, true)) {
+					return;
+				}
+
+				XposedHelpers.callMethod(param.thisObject, "setTimeout", prefs.getInt(Common.PREF_PRESENCE_CHECK_TIMEOUT, 2000));
+			}
+		}
+		
 		@Override
 		protected void afterHookedMethod(MethodHookParam param) throws Throwable
 		{
@@ -72,11 +97,11 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 			Context context = (Context) XposedHelpers.getAdditionalInstanceField(XposedHelpers.getSurroundingThis(param.thisObject), "mContext");
 
 			if (context == null){
-				Log.d("PresenceCheckWatchdogRunHook",  "step-4 context == null");
+				log("PresenceCheckWatchdogRunHook",  "step-4 context == null");
 				return;
 			}
 
-			Log.d("PresenceCheckWatchdogRunHook",  "step-4 context != null");
+			log("PresenceCheckWatchdogRunHook",  "step-4 context != null");
 			try {
 				byte[] uId = (byte[]) XposedHelpers.callMethod(XposedHelpers.getSurroundingThis(param.thisObject), "getUid");
 				Intent intentToStart = new Intent();
@@ -92,12 +117,12 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 				{
 					List<ResolveInfo> activities = packageManager.queryIntentActivities(intentToStart, 0);
 					if (activities.size() > 0) {
-						Log.d("PresenceCheckWatchdogRunHook", 
+						log("PresenceCheckWatchdogRunHook", 
 								String.format("startActivity - android.nfc.action.TAG_LOST(%x%x%x%x)", uId[0], uId[1], uId[2], uId[3]));
 						context.startActivity(intentToStart);
 					}
 					else{
-						Log.d("PresenceCheckWatchdogRunHook", 
+						log("PresenceCheckWatchdogRunHook", 
 								String.format("activities.size() <= 0 (%x%x%x%x)", uId[0], uId[1], uId[2], uId[3]));
 					}
 				}
@@ -122,9 +147,9 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 				Context context = (Context) XposedHelpers.getObjectField(param.thisObject, "mContext");
 				XposedHelpers.setAdditionalInstanceField(param.args[0], "mContext", context);
 				if (context != null)
-					Log.d("NfcServiceOnRemoteEndpointDiscoveredHook","setAdditionalInstanceField - mContext != null");
+					log("NfcServiceOnRemoteEndpointDiscoveredHook","setAdditionalInstanceField - mContext != null");
 				else
-					Log.d("NfcServiceOnRemoteEndpointDiscoveredHook","setAdditionalInstanceField - mContext == null");
+					log("NfcServiceOnRemoteEndpointDiscoveredHook","setAdditionalInstanceField - mContext == null");
 			} catch (Exception e) {  
 				e.printStackTrace();  
 			}  
@@ -137,6 +162,7 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 	{
 		prefs = AndroidAppHelper.getSharedPreferencesForPackage(MY_PACKAGE_NAME, Common.PREFS, Context.MODE_PRIVATE);
 		MODULE_PATH = startupParam.modulePath;
+		mDebugMode = prefs.getBoolean(Common.PREF_DEBUG_MODE, true);
 	}
 
 	public void playTagLostSound() {
@@ -177,6 +203,9 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 							public void onReceive(Context context, Intent intent) {
 								XposedBridge.log(MY_PACKAGE_NAME + ": " + "Settings updated, reloading...");
 								AndroidAppHelper.reloadSharedPreferencesIfNeeded(prefs);
+								
+								// This may be faster than using prefs.getBoolean, since we use this a lot.
+								mDebugMode = prefs.getBoolean(Common.PREF_DEBUG_MODE, true);
 							}
 						}, new IntentFilter(Common.SETTINGS_UPDATED_INTENT));
 					}
@@ -290,15 +319,6 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 			} catch (ClassNotFoundError e) {
 				XposedBridge.log("Not hooking class .nxp.NativeNfcTag$PresenceCheckWatchdog");
 			}
-
-			//			try{
-			//				//public TransceiveResult transceive(int nativeHandle, byte[] data, boolean raw)
-			//				XposedHelpers.findAndHookMethod(PACKAGE_NFC + ".NfcService$TagService", lpparam.classLoader, "transceive",  
-			//						int.class, byte[].class, boolean.class,
-			//						new TagServiceTransceiveHook());
-			//			}
-			//			catch (Throwable t) { XposedBridge.log(t); }
-
 		}
 	}
 

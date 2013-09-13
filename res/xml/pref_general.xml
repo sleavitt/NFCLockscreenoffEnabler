@@ -2,5 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
     <Preference android:title="@string/app_name" android:summary="@string/copyright_summary" android:key="copyright_key" /><ListPreference android:entries="@array/pref_lockstate_titles" android:entryValues="@array/pref_lockstate_values" android:key="enable_nfc_for_lock_state" android:title="@string/pref_title_enable_nfc_for_lock_state" />
     <CheckBoxPreference android:title="@string/TaglostMessage" android:key="TagLostDetecting" android:summary="@string/pref_description_enable_tag_lost_detection"/><CheckBoxPreference android:title="@string/play_tag_lost_sound" android:key="should_play_tag_lost_sound" android:summary="@string/pref_description_play_tag_lost_sound" />
+    <EditTextPreference android:key="presence_check_timeout" android:title="@string/pref_title_presence_check_timeout" android:summary="@string/pref_description_presence_check_timeout" android:inputType="number" android:defaultValue="2000" android:dialogMessage="@string/pref_dialog_description_presence_check_timeout" android:dialogTitle="@string/pref_title_presence_check_timeout"/>
+    <CheckBoxPreference android:title="@string/pref_title_debug_mode" android:key="debug_mode" android:summary="@string/pref_description_debug_mode" android:defaultValue="true"/>
     
 </PreferenceScreen>

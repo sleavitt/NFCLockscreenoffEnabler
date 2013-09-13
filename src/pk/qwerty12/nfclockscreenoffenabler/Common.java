@@ -6,6 +6,8 @@ public class Common {
 	public static final String PREFS = "NFCModSettings";
 	public static final String PREF_LOCKED = "On_Locked";
 	public static final String PREF_TAGLOST = "TagLostDetecting";
+	public static final String PREF_PRESENCE_CHECK_TIMEOUT = "presence_check_timeout";
+	public static final String PREF_DEBUG_MODE = "debug_mode";
 	public static final String PLAY_TAG_LOST_SOUND = "should_play_tag_lost_sound";
 	
 	/* -- */

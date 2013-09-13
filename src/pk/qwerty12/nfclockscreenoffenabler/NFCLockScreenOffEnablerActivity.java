@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -20,6 +21,7 @@ public class NFCLockScreenOffEnablerActivity extends PreferenceActivity {
 	private CheckBoxPreference mEnableTagLostSoundCheckBox = null;
 	private ListPreference mEnableNfcForStatesList = null;
 	private Preference mCopyrightPreference = null;
+	private EditTextPreference mPresenceCheckTimeoutPreference = null;
 	
 	@SuppressWarnings("deprecation")
 	@SuppressLint("WorldReadableFiles")
@@ -67,6 +69,10 @@ public class NFCLockScreenOffEnablerActivity extends PreferenceActivity {
 			mEnableNfcForStatesList.setValue("screen_off");
 		
 		mEnableNfcForStatesList.setDefaultValue("locked_screen_on");
+		if (!prefs.contains(Common.PREF_LOCKED))
+			mEnableNfcForStatesList.setValueIndex(0);
+		
+		mEnableNfcForStatesList.setSummary("   "); // required or will not update
 		mEnableNfcForStatesList.setSummary("%s");
 		mEnableNfcForStatesList.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			@Override
@@ -101,6 +107,41 @@ public class NFCLockScreenOffEnablerActivity extends PreferenceActivity {
 				.setMessage(contributorString);
 				
 		        alertDialog.show();
+				return true;
+			}
+		});
+		
+		mPresenceCheckTimeoutPreference = (EditTextPreference) findPreference(Common.PREF_PRESENCE_CHECK_TIMEOUT);
+		if (prefs.contains(Common.PREF_PRESENCE_CHECK_TIMEOUT)) {
+			mPresenceCheckTimeoutPreference.setSummary(getString(R.string.pref_summary_presence_check)
+					+ " " + String.valueOf(prefs.getInt(Common.PREF_PRESENCE_CHECK_TIMEOUT, 2000)));
+			mPresenceCheckTimeoutPreference.setDefaultValue(String.valueOf(prefs.getInt(Common.PREF_PRESENCE_CHECK_TIMEOUT, 2000)));
+		}
+		mPresenceCheckTimeoutPreference.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				Editor prefsEditor = prefs.edit();
+				prefsEditor.putInt(Common.PREF_PRESENCE_CHECK_TIMEOUT, Integer.parseInt((String)newValue));
+				prefsEditor.commit();
+				
+				emitSettingsChanged();
+				
+				mPresenceCheckTimeoutPreference.setSummary(" ");
+				mPresenceCheckTimeoutPreference.setSummary(getString(R.string.pref_summary_presence_check)
+						+ " " + (String)newValue);
+				
+				mPresenceCheckTimeoutPreference.setDefaultValue((String)newValue);
+				
+				return false;
+			}
+		});
+		
+		findPreference(Common.PREF_DEBUG_MODE).setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				emitSettingsChanged();
 				return true;
 			}
 		});
