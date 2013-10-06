@@ -12,4 +12,27 @@ public class Common {
 	
 	/* -- */
 	public static final String PACKAGE_NFC = "com.android.nfc";
+
+	// Intent used internally in this module to unlock the device.
+	public static final String INTENT_UNLOCK_DEVICE = "pk.qwerty12.nfclockscreenoffenabler.UNLOCK_DEVICE";
+	
+	// The intent above is replaced by the one below if the above is used with adb.
+	public static final String INTENT_UNLOCK_INTERCEPTED = "pk.qwerty12.nfclockscreenoffenabler.UNLOCK_ATTEMPT_INTERCEPTED";
+	public static final String PREF_NFC_KEYS = "authorized_nfc_tag_uuids";
+	
+	// Converting byte[] to hex string:
+	public static String byteArrayToHexString(byte [] inarray) {
+		int i, j, in;
+		String [] hex = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"};
+		String out= "";
+
+		for(j = 0 ; j < inarray.length ; ++j) {
+			in = (int) inarray[j] & 0xff;
+			i = (in >> 4) & 0x0f;
+			out += hex[i];
+			i = in & 0x0f;
+			out += hex[i];
+		}
+		return out;
+	}
 }
