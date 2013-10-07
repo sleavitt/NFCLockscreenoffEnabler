@@ -106,7 +106,7 @@ public class NfcTags extends Activity {
 
 		mArrayAdapter = new NfcTagArrayAdapter(this, R.layout.nfc_tag_row, nfcTagsArray);
 		SwipeDismissAdapter swipeAdapter = new SwipeDismissAdapter(mArrayAdapter, new OnDismissCallback() {
-			
+
 			@Override
 			public void onDismiss(AbsListView listView, int[] reverseSortedPositions) {
 				for (int position : reverseSortedPositions) {
@@ -115,7 +115,7 @@ public class NfcTags extends Activity {
 			}
 		});
 		AlphaInAnimationAdapter alphaAdapter = new AlphaInAnimationAdapter(swipeAdapter);
-		
+
 		alphaAdapter.setAbsListView(mListView);
 		mListView.setAdapter(alphaAdapter); 
 	}

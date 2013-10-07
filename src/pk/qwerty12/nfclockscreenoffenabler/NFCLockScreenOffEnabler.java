@@ -252,7 +252,7 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 	}
 
 	public void playTagLostSound() {
-		if (!prefs.getBoolean(Common.PLAY_TAG_LOST_SOUND, true))
+		if (!prefs.getBoolean(Common.PREF_PLAY_TAG_LOST_SOUND, true))
 			return;
 
 		synchronized (nfcServiceObject) {

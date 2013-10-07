@@ -44,37 +44,32 @@ public class NfcTagArrayAdapter extends ArrayAdapter<NfcTag> {
 		}
 		return v;
 	}
-	
+
 	public Set<String> getTagNames() {
 		HashSet<String> names = new HashSet<String>();
 		for (int i = 0; i < getCount(); i++) {
 			names.add(getItem(i).getTagName());
 		}
-		
+
 		return names;
 	}
-	
+
 	public Set<String> getTagIds() {
 		HashSet<String> ids = new HashSet<String>();
 		for (int i = 0; i < getCount(); i++) {
 			ids.add(getItem(i).getTagId());
 		}
-		
+
 		return ids;
 	}
-	
+
 	public boolean containsTagId(String nfcTagId) {
 		for (int i = 0; i < getCount(); i++) {
 			if (nfcTagId.equals(getItem(i).getTagId()))
 				return true;
 		}
-		
+
 		return false;
-	}
-	
-	@Override
-	public void add(NfcTag object) {
-		super.add(object);
 	}
 
 	public void remove(int position) {

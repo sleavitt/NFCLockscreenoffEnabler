@@ -52,12 +52,12 @@ public class NFCLockScreenOffEnablerActivity extends PreferenceActivity {
 		});
 
 		mEnableTagLostSoundCheckBox.setEnabled(mEnableTagLostCheckBox.isChecked());
-		mEnableTagLostSoundCheckBox.setChecked(prefs.getBoolean(Common.PLAY_TAG_LOST_SOUND, true));
+		mEnableTagLostSoundCheckBox.setChecked(prefs.getBoolean(Common.PREF_PLAY_TAG_LOST_SOUND, true));
 		mEnableTagLostSoundCheckBox.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			@Override
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
 				Editor prefsEditor = prefs.edit();
-				prefsEditor.putBoolean(Common.PLAY_TAG_LOST_SOUND, (Boolean) newValue);
+				prefsEditor.putBoolean(Common.PREF_PLAY_TAG_LOST_SOUND, (Boolean) newValue);
 				prefsEditor.commit();
 
 				emitSettingsChanged();
@@ -166,7 +166,7 @@ public class NFCLockScreenOffEnablerActivity extends PreferenceActivity {
 	@SuppressWarnings("deprecation")
 	private void getViews() {
 		mEnableTagLostCheckBox = (CheckBoxPreference) findPreference(Common.PREF_TAGLOST);
-		mEnableTagLostSoundCheckBox = (CheckBoxPreference) findPreference(Common.PLAY_TAG_LOST_SOUND);
+		mEnableTagLostSoundCheckBox = (CheckBoxPreference) findPreference(Common.PREF_PLAY_TAG_LOST_SOUND);
 		mEnableNfcForStatesList = (ListPreference) findPreference("enable_nfc_for_lock_state");
 		mCopyrightPreference = (Preference) findPreference("copyright_key");
 	}
