@@ -87,8 +87,9 @@ public class NfcTags extends Activity {
 	}
 
 	private void setupListViewFromSet() {
-		String[] nfcTagIds = mPrefs.getStringSet(Common.PREF_NFC_KEYS, null).toArray(new String[0]);
-		String[] nfcTagNames = mPrefs.getStringSet(Common.PREF_NFC_KEYS_NAMES, new HashSet<String>()).toArray(new String[0]);
+		HashSet<String> defaultValue = new HashSet<String>();
+		String[] nfcTagIds = mPrefs.getStringSet(Common.PREF_NFC_KEYS, defaultValue).toArray(new String[0]);
+		String[] nfcTagNames = mPrefs.getStringSet(Common.PREF_NFC_KEYS_NAMES, defaultValue).toArray(new String[0]);
 
 		ArrayList<NfcTag> nfcTagsArray = new ArrayList<NfcTag>();
 
