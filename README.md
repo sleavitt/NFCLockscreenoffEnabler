@@ -5,3 +5,15 @@ An Xposed modification that lets you select whether NFC is active on the lockscr
 unlocked and the screen on.
 
 Licensed under the GPL v3, but if included in a project, proper credit to me is expected.
+
+Contributors:
+* qwerty12 (Main developer of module)
+* madfish73 (Tag lost support)
+* MohammadAG (NFC Unlocking, overall improvement of module)
+
+Building
+===========================================================================
+
+This module makes use of the open source library ListViewAnimations. To build an APK, you need to include the library in the build path.
+
+ListViewAnimations: https://github.com/nhaarman/ListViewAnimations
