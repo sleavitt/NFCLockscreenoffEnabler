@@ -19,6 +19,9 @@ public class Common {
 	// The intent above is replaced by the one below if the above is used with adb.
 	public static final String INTENT_UNLOCK_INTERCEPTED = "pk.qwerty12.nfclockscreenoffenabler.UNLOCK_ATTEMPT_INTERCEPTED";
 	public static final String PREF_NFC_KEYS = "authorized_nfc_tag_uuids";
+	public static final String PREF_NFC_KEYS_NAMES = "authorized_nfc_tag_friendly_names";
+
+	
 	
 	// Converting byte[] to hex string:
 	public static String byteArrayToHexString(byte [] inarray) {

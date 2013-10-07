@@ -32,7 +32,10 @@
     <string name="authorized_nfc_tags_title">Authorized NFC tags</string>
     <string name="authorized_nfc_tags_description">NFC tags that will unlock your device</string>
     <string name="tag_already_added">NFC tag already added</string>
-    <string name="nfc_tags_activity_description">The following NFC tags will unlock your device. Tap an NFC tag with your device to add it, long press an ID to delete it. NFC while screen off has to be enabled.</string>
+    <string name="nfc_tags_activity_description">The following NFC tags will unlock your device. Tap an NFC tag with your device to add it, swipe an ID left or right to delete it. NFC while screen off has to be enabled.</string>
     <string name="requires_jelly_bean_mr1">Requires Android 4.2, support for older versions coming soon</string>
+    <string name="unnamed_tag">Unnamed tag</string>
+    <string name="new_tag_detected">New NFC tag detected</string>
+    <string name="type_in_name_for_tag">Type a name for the tag:</string>
 
 </resources>

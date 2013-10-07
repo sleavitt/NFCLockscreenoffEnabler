@@ -2,12 +2,15 @@ package pk.qwerty12.nfclockscreenoffenabler;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Set;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
@@ -20,24 +23,30 @@ import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcA;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.AbsListView;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.haarman.listviewanimations.itemmanipulation.OnDismissCallback;
+import com.haarman.listviewanimations.itemmanipulation.SwipeDismissAdapter;
+import com.haarman.listviewanimations.swinginadapters.prepared.AlphaInAnimationAdapter;
 
 public class NfcTags extends Activity {
 
 	private SharedPreferences mPrefs = null;
 	private NfcAdapter mNfcAdapter = null;
-	private PendingIntent mPendingIntent;
-	private IntentFilter[] mIntentFiltersArray;
-	private String[][] mTechListsArray;
-	private boolean mAlreadySetup;
-	private ListView mListView;
+	private PendingIntent mPendingIntent = null;
+	private IntentFilter[] mIntentFiltersArray = null;
+	private String[][] mTechListsArray = null;
+	private boolean mAlreadySetup = false;
+	private ListView mListView = null;
+	private NfcTagArrayAdapter mArrayAdapter;
+	private boolean mDialogShowing = false;
 
 	@SuppressLint("WorldReadableFiles")
 	@SuppressWarnings("deprecation")
@@ -51,23 +60,8 @@ public class NfcTags extends Activity {
 
 		mPrefs = getSharedPreferences(Common.PREFS, Context.MODE_WORLD_READABLE);
 
-		Set<String> nfcTags = mPrefs.getStringSet(Common.PREF_NFC_KEYS, null);
-
 		mListView = (ListView) findViewById(R.id.listView);
-		mListView.setOnItemLongClickListener(new ListView.OnItemLongClickListener() {
-
-			@Override
-			public boolean onItemLongClick(AdapterView<?> arg0, View view, int position, long id) {
-				@SuppressWarnings("unchecked")
-				ArrayAdapter<String> adapter = (ArrayAdapter<String>) mListView.getAdapter();
-				adapter.remove(adapter.getItem(position));
-				mListView.setAdapter(adapter);
-
-				return false;
-			}
-
-		});
-		setupListViewFromSet(nfcTags);
+		setupListViewFromSet();
 	}
 
 	@Override
@@ -82,15 +76,9 @@ public class NfcTags extends Activity {
 	@Override
 	public void onBackPressed() {
 		Editor editor = mPrefs.edit();
-		Set<String> set = new HashSet<String>();
-		@SuppressWarnings("unchecked")
-		ArrayAdapter<String> adapter = (ArrayAdapter<String>) mListView.getAdapter();
-		for (int i = 0; i < adapter.getCount(); i++) {
-			String current = adapter.getItem(i);
-			set.add(current);
-		}
 
-		editor.putStringSet(Common.PREF_NFC_KEYS, set);
+		editor.putStringSet(Common.PREF_NFC_KEYS, mArrayAdapter.getTagIds());
+		editor.putStringSet(Common.PREF_NFC_KEYS_NAMES, mArrayAdapter.getTagNames());
 		editor.commit();
 
 		Intent i = new Intent(Common.SETTINGS_UPDATED_INTENT);
@@ -98,15 +86,38 @@ public class NfcTags extends Activity {
 		super.onBackPressed();
 	}
 
-	private void setupListViewFromSet(Set<String> nfcTags) {
-		ArrayList<String> tagIDs = new ArrayList<String>();
-		if (nfcTags != null) {
-			for (String tagID : nfcTags)
-				tagIDs.add(tagID);
+	private void setupListViewFromSet() {
+		String[] nfcTagIds = mPrefs.getStringSet(Common.PREF_NFC_KEYS, null).toArray(new String[0]);
+		String[] nfcTagNames = mPrefs.getStringSet(Common.PREF_NFC_KEYS_NAMES, new HashSet<String>()).toArray(new String[0]);
+
+		ArrayList<NfcTag> nfcTagsArray = new ArrayList<NfcTag>();
+
+		for (int i = 0; i < nfcTagIds.length; i++) {
+			String tagId = nfcTagIds[i];
+			String tagName;
+			try {
+				tagName = nfcTagNames[i];
+			} catch (Exception e) {
+				tagName = getString(R.string.unnamed_tag);
+			}
+
+			nfcTagsArray.add(new NfcTag(tagId, tagName));
 		}
-		ArrayAdapter<String> arrayAdapter =      
-				new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, tagIDs);
-		mListView.setAdapter(arrayAdapter); 
+
+		mArrayAdapter = new NfcTagArrayAdapter(this, R.layout.nfc_tag_row, nfcTagsArray);
+		SwipeDismissAdapter swipeAdapter = new SwipeDismissAdapter(mArrayAdapter, new OnDismissCallback() {
+			
+			@Override
+			public void onDismiss(AbsListView listView, int[] reverseSortedPositions) {
+				for (int position : reverseSortedPositions) {
+					mArrayAdapter.remove(position);
+				}
+			}
+		});
+		AlphaInAnimationAdapter alphaAdapter = new AlphaInAnimationAdapter(swipeAdapter);
+		
+		alphaAdapter.setAbsListView(mListView);
+		mListView.setAdapter(alphaAdapter); 
 	}
 
 	@Override
@@ -165,23 +176,72 @@ public class NfcTags extends Activity {
 
 	@Override
 	protected void onNewIntent(Intent intent) {
-		// fetch the tag from the intent
-		Tag t = (Tag)intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-		Log.v("NFC", "{"+t+"}");
+		if (mDialogShowing)
+			return;
 
+		Tag t = (Tag)intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
 		String uuid = Common.byteArrayToHexString(t.getId());
 
-		@SuppressWarnings("unchecked")
-		ArrayAdapter<String> adapter = (ArrayAdapter<String>) mListView.getAdapter();
-		for (int i = 0; i < adapter.getCount(); i++) {
-			String current = adapter.getItem(i);
-			if (current.equals(uuid)) {
-				Toast.makeText(this, R.string.tag_already_added, Toast.LENGTH_SHORT).show();
-				return;
-			}
+		if (mArrayAdapter.containsTagId(uuid)) {
+			Toast.makeText(this, R.string.tag_already_added, Toast.LENGTH_SHORT).show();
+			return;
 		}
 
-		adapter.add(uuid);
-		mListView.setAdapter(adapter);
+		AlertDialog dialog = createAskForNameDialog(uuid);
+		dialog.show();
+		mDialogShowing = true;
+	}
+
+	private AlertDialog createAskForNameDialog(final String uuid) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle(R.string.new_tag_detected);
+		builder.setMessage(R.string.type_in_name_for_tag);
+
+		LinearLayout layout = new LinearLayout(this);
+		layout.setOrientation(LinearLayout.VERTICAL);
+		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		params.setMargins(20, 0, 30, 0);
+
+		final EditText input = new EditText(this);
+		layout.addView(input);
+		builder.setView(layout);
+
+		builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int whichButton) {
+				String name = input.getText().toString();
+				if (TextUtils.isEmpty(name))
+					name = getString(R.string.unnamed_tag);
+				mArrayAdapter.add(new NfcTag(uuid, name));
+				dialog.dismiss();
+				return;
+			}
+		});
+
+		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+				return;
+			}
+		});
+
+		builder.setOnCancelListener(new OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface dialog) {
+				dialog.dismiss();
+			}
+		});
+
+		builder.setOnDismissListener(new OnDismissListener() {	
+			@Override
+			public void onDismiss(DialogInterface dialog) {
+				mDialogShowing = false;
+			}
+		});
+
+		AlertDialog dialog = builder.create();
+		return dialog;
 	}
 }
