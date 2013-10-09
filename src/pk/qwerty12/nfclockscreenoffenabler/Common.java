@@ -11,9 +11,12 @@ public class Common {
 	public static final String PREF_PLAY_TAG_LOST_SOUND = "should_play_tag_lost_sound";
 	public static final String PREF_NFC_KEYS = "authorized_nfc_tag_uuids";
 	public static final String PREF_NFC_KEYS_NAMES = "authorized_nfc_tag_friendly_names";
-	
+
 	/* -- */
 	public static final String PACKAGE_NFC = "com.android.nfc";
+
+	// Intent sent when a tag is lost
+	public static final String ACTION_TAG_LOST = "android.nfc.action.TAG_LOST";
 
 	// Intent used internally in this module to unlock the device.
 	public static final String INTENT_UNLOCK_DEVICE = "pk.qwerty12.nfclockscreenoffenabler.UNLOCK_DEVICE";
