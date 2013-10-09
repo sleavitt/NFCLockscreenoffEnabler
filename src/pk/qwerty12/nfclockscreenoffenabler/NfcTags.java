@@ -34,7 +34,6 @@ import android.widget.Toast;
 
 import com.haarman.listviewanimations.itemmanipulation.OnDismissCallback;
 import com.haarman.listviewanimations.itemmanipulation.SwipeDismissAdapter;
-import com.haarman.listviewanimations.swinginadapters.prepared.AlphaInAnimationAdapter;
 
 public class NfcTags extends Activity {
 
@@ -115,10 +114,9 @@ public class NfcTags extends Activity {
 				}
 			}
 		});
-		AlphaInAnimationAdapter alphaAdapter = new AlphaInAnimationAdapter(swipeAdapter);
 
-		alphaAdapter.setAbsListView(mListView);
-		mListView.setAdapter(alphaAdapter); 
+		swipeAdapter.setAbsListView(mListView);
+		mListView.setAdapter(swipeAdapter);
 	}
 
 	@Override
