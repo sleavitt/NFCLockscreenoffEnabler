@@ -415,57 +415,42 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 			}
 		}
 
+
+
 		if (lpparam.packageName.equals("android")) {
+			final int currentapiVersion = android.os.Build.VERSION.SDK_INT;
 			try {
-				Class<?> KeyguardHostView = findClass("com.android.internal.policy.impl.keyguard.KeyguardHostView", lpparam.classLoader);
+				String className;
+
+				if (currentapiVersion < android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+					className = "com.android.internal.policy.impl.LockPatternKeyguardView";
+				} else {
+					className = "com.android.internal.policy.impl.keyguard.KeyguardHostView";
+				}
+
+				Class<?> KeyguardHostView = findClass(className, lpparam.classLoader);
 				XposedBridge.hookAllConstructors(KeyguardHostView, new XC_MethodHook() {
 					@Override
 					protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+						String fieldName;
+						if (currentapiVersion < android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+							fieldName = "mKeyguardScreenCallback";
+						} else {
+							fieldName = "mCallback";
+						}
+
 						try {
 							mKeyguardSecurityCallbackInstance = 
-									getObjectField(param.thisObject, "mCallback");
+									getObjectField(param.thisObject, fieldName);
 						} catch (NoSuchFieldError e) {}
 
-						Context context = (Context) getObjectField(param.thisObject, "mContext");
-
-						BroadcastReceiver receiver = new BroadcastReceiver() {				
-							@Override
-							public void onReceive(Context context, Intent intent) {
-								if (Common.INTENT_UNLOCK_DEVICE.equals(intent.getAction())) {
-									try {
-										// Fake a correct passcode
-										if (mKeyguardSecurityCallbackInstance != null) {
-											XposedHelpers.callMethod(mKeyguardSecurityCallbackInstance,
-													"reportSuccessfulUnlockAttempt");
-										}
-
-										if (mViewMediatorCallback != null) {
-											XposedHelpers.callMethod(mViewMediatorCallback,
-													"keyguardDone", true);
-										}
-									} catch (Exception e) {
-										e.printStackTrace();
-									}
-								} else if (Common.INTENT_UNLOCK_INTERCEPTED.equals(intent.getAction())) {
-									Notification.Builder mBuilder = new Notification.Builder(context)
-									.setSmallIcon(android.R.drawable.ic_dialog_alert)
-									.setContentTitle("Unlock attempt intercepted")
-									.setContentText("An attempt to use an intent used by NFC unlocking to unlock your device has been prevented")
-									.setAutoCancel(true);
-									NotificationManager mNotificationManager =
-											(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-									mNotificationManager.notify(0, mBuilder.build());
-								}
-							}
-						};
-
-						context.registerReceiver(receiver,
-								new IntentFilter(Common.INTENT_UNLOCK_DEVICE),
-								"android.permission.INTERNAL_SYSTEM_WINDOW",
-								null);
-
-						context.registerReceiver(receiver,
-								new IntentFilter(Common.INTENT_UNLOCK_INTERCEPTED));
+						Context context;
+						try {
+							context = (Context) getObjectField(param.thisObject, "mContext");
+						} catch (NoSuchFieldError e) {
+							context = (Context) param.args[0];
+						}
+						registerNfcUnlockReceivers(context);
 					}
 				});
 			} catch (ClassNotFoundError e) {
@@ -473,19 +458,74 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 			} catch (NoSuchFieldError e) {}
 
 			try {
-				Class<?> KeyguardViewManager = findClass("com.android.internal.policy.impl.keyguard.KeyguardViewManager", lpparam.classLoader);
+				String className;		
+				if (currentapiVersion < android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+					className = "com.android.internal.policy.impl.KeyguardViewManager";
+				} else {
+					className = "com.android.internal.policy.impl.keyguard.KeyguardViewManager";
+				}
+				Class<?> KeyguardViewManager = findClass(className, lpparam.classLoader);
 				XposedBridge.hookAllConstructors(KeyguardViewManager, new XC_MethodHook() {
 					@Override
 					protected void afterHookedMethod(MethodHookParam param) throws Throwable {
 						try {
+							String fieldName;
+							if (currentapiVersion < android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+								fieldName = "mCallback";
+							} else {
+								fieldName = "mViewMediatorCallback";
+							}
+
 							mViewMediatorCallback = XposedHelpers.getObjectField(param.thisObject,
-									"mViewMediatorCallback");
+									fieldName);
 						} catch (NoSuchFieldError e) {
 							e.printStackTrace();
 						}
 					}
 				});
-			} catch (ClassNotFoundError e) {}
+			} catch (ClassNotFoundError e) {
+				XposedBridge.log("Class not found: " + e.getMessage().toString() + " NFC Unlocking won't work");
+			}
 		}
+	}
+
+	private void registerNfcUnlockReceivers(Context context) {
+		if (context == null)
+			return;
+		BroadcastReceiver receiver = new BroadcastReceiver() {				
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				if (Common.INTENT_UNLOCK_DEVICE.equals(intent.getAction())) {
+					try {
+						// Fake a correct passcode
+						if (mKeyguardSecurityCallbackInstance != null) {
+							XposedHelpers.callMethod(mKeyguardSecurityCallbackInstance,
+									"reportSuccessfulUnlockAttempt");
+						}
+
+						if (mViewMediatorCallback != null) {
+							XposedHelpers.callMethod(mViewMediatorCallback,
+									"keyguardDone", true);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				} else if (Common.INTENT_UNLOCK_INTERCEPTED.equals(intent.getAction())) {
+					Notification.Builder mBuilder = new Notification.Builder(context)
+					.setSmallIcon(android.R.drawable.ic_dialog_alert)
+					.setContentTitle("Unlock attempt intercepted")
+					.setContentText("An attempt to use an intent used by NFC unlocking to unlock your device has been prevented")
+					.setAutoCancel(true);
+					NotificationManager mNotificationManager =
+							(NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+					mNotificationManager.notify(0, mBuilder.build());
+				}
+			}
+		};
+
+		context.registerReceiver(receiver, new IntentFilter(Common.INTENT_UNLOCK_DEVICE),
+				"android.permission.INTERNAL_SYSTEM_WINDOW", null);
+
+		context.registerReceiver(receiver, new IntentFilter(Common.INTENT_UNLOCK_INTERCEPTED));
 	}
 }
