@@ -146,21 +146,14 @@ public class NFCLockScreenOffEnablerActivity extends PreferenceActivity {
 			}
 		});
 		Preference authorizedNfcPreference = findPreference("nfc_tags");
+		authorizedNfcPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
-		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-		if (currentapiVersion < android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
-			authorizedNfcPreference.setEnabled(false);
-			authorizedNfcPreference.setSummary(R.string.requires_jelly_bean_mr1);
-		} else {
-			authorizedNfcPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					startActivity(new Intent(NFCLockScreenOffEnablerActivity.this, NfcTags.class));
-					return false;
-				}
-			});
-		}
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				startActivity(new Intent(NFCLockScreenOffEnablerActivity.this, NfcTags.class));
+				return false;
+			}
+		});
 	}
 
 	@SuppressWarnings("deprecation")
