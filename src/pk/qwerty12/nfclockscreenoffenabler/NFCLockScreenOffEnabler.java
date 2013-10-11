@@ -35,8 +35,7 @@ import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.XposedHelpers.ClassNotFoundError;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
-public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHookLoadPackage, IXposedHookCmdInit
-{
+public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHookLoadPackage, IXposedHookCmdInit {
 	// Thanks to Tungstwenty for the preferences code, which I have taken from his Keyboard42DictInjector and made a bad job of it
 	private static final String MY_PACKAGE_NAME = NFCLockScreenOffEnabler.class.getPackage().getName();
 	private String MODULE_PATH;
@@ -54,10 +53,14 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 	//private static final int SCREEN_STATE_OFF = 1;
 	private static final int SCREEN_STATE_ON_LOCKED = 2;
 	private static final int SCREEN_STATE_ON_UNLOCKED = 3;
+	private static final int SOUND_START = 0;
+	private static final int SOUND_END = 1;
+	private static final int SOUND_ERROR = 2;
 
 	int mTagLostSound;
 
 	private boolean mDebugMode = true;
+	private static Set<String> mSoundsToPlayList;
 	protected Object mViewMediatorCallback;
 
 	// Prevent multiple registers.
@@ -78,12 +81,12 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 
 		@Override
 		protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-			if (!prefs.getBoolean(Common.PREF_TAGLOST, true)
-					|| prefs.getBoolean(Common.PREF_LOCKED, true))
+			if (!prefs.getBoolean(Common.PREF_TAGLOST, true))
 				return;
 
 			XposedHelpers.callMethod(param.thisObject, "setTimeout",
-					prefs.getInt(Common.PREF_PRESENCE_CHECK_TIMEOUT, 2000));
+					Integer.parseInt(prefs.getString(Common.PREF_PRESENCE_CHECK_TIMEOUT,
+							"2000")));
 		}
 
 		@Override
@@ -154,7 +157,8 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 				Set<String> authorizedNfcTags = prefs.getStringSet(Common.PREF_NFC_KEYS,
 						new HashSet<String>());
 				Context context = (Context) XposedHelpers.getObjectField(param.thisObject, "mContext");
-				XposedBridge.log(uuid.trim());
+				if (mDebugMode)
+					XposedBridge.log(uuid.trim());
 
 				if (context != null) {
 					if (authorizedNfcTags != null && authorizedNfcTags.contains(uuid.trim())) {
@@ -166,7 +170,6 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 					if (!prefs.getBoolean(Common.PREF_TAGLOST, true))
 						return;
 
-					// TODO: find out why this is done.
 					XposedHelpers.setAdditionalInstanceField(param.args[0], "mContext", context);
 				}
 			} catch (Exception e) {  
@@ -247,7 +250,7 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 	}
 
 	public void playTagLostSound() {
-		if (!prefs.getBoolean(Common.PREF_PLAY_TAG_LOST_SOUND, true))
+		if (!mSoundsToPlayList.contains("sound_taglost"))
 			return;
 
 		synchronized (nfcServiceObject) {
@@ -262,10 +265,20 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 		}
 	}
 
+	private void reloadSoundsToPlayList() {
+		HashSet<String> defaultSounds = new HashSet<String>();
+		defaultSounds.add("sound_start");
+		defaultSounds.add("sound_error");
+		defaultSounds.add("sound_end");
+		mSoundsToPlayList = prefs.getStringSet(Common.PREF_SOUNDS_TO_PLAY,
+				defaultSounds);
+	}
+
 	@Override
 	public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
 		if (lpparam.packageName.equals(Common.PACKAGE_NFC)) {
 			modRes = XModuleResources.createInstance(MODULE_PATH, null);
+			reloadSoundsToPlayList();
 
 			try {
 				Class<?> NfcService = findClass(Common.PACKAGE_NFC + ".NfcService", lpparam.classLoader);
@@ -277,8 +290,10 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 					@Override
 					protected void afterHookedMethod(MethodHookParam param) throws Throwable {
 						nfcServiceObject = param.thisObject;
+
 						mContext = (Context) XposedHelpers.getObjectField(param.thisObject, "mContext");
 						mContext.registerReceiver(new BroadcastReceiver() {
+
 							@Override
 							public void onReceive(Context context, Intent intent) {
 								XposedBridge.log(MY_PACKAGE_NAME + ": " + "Settings updated, reloading...");
@@ -286,6 +301,7 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 
 								// This may be faster than using prefs.getBoolean, since we use this a lot.
 								mDebugMode = prefs.getBoolean(Common.PREF_DEBUG_MODE, true);
+								reloadSoundsToPlayList();
 							}
 						}, new IntentFilter(Common.SETTINGS_UPDATED_INTENT));
 					}
@@ -326,12 +342,32 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 					e.printStackTrace();
 				}
 
+				try {
+					findAndHookMethod(NfcService, "playSound", int.class, new XC_MethodHook() {
+						@Override
+						protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+							int event = (Integer) param.args[0];
+							if ((event == SOUND_START && !mSoundsToPlayList.contains("sound_start"))
+									|| (event == SOUND_END && !mSoundsToPlayList.contains("sound_end"))
+									|| (event == SOUND_ERROR && !mSoundsToPlayList.contains("sound_error"))) {
+								param.setResult(false);
+							}
+						}
+					});
+				} catch (NoSuchMethodError e) {
+					e.printStackTrace();
+				}
+
 				// Nfc module of some kinds of ROMs may call checkScreenState in applyRouting
 				// and update mScreenState, so we have to hook checkScreenState and modify
 				// the return value
 				findAndHookMethod(NfcService, "checkScreenState", new XC_MethodHook() {
 					@Override
 					protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+						final String enableNfcWhen = prefs.getString(Common.PREF_ENABLE_NFC_WHEN, "locked_screen_on");
+						if (enableNfcWhen.equals("unlocked"))
+							return;
+
 						try {
 							Boolean NeedScreenOnState = (Boolean)XposedHelpers.getAdditionalInstanceField(param.thisObject, "NeedScreenOnState") ;
 							if (NeedScreenOnState == null || NeedScreenOnState == false)
@@ -347,14 +383,17 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 				findAndHookMethod(NfcService, "applyRouting", boolean.class, new XC_MethodHook() {
 					@Override
 					protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-						try {
+						final String enableNfcWhen = prefs.getString(Common.PREF_ENABLE_NFC_WHEN, "locked_screen_on");
+						if (enableNfcWhen.equals("unlocked"))
+							return;
+						try {	
 							final int currScreenState = (Integer) XposedHelpers.callMethod(param.thisObject, "checkScreenState");
 							// We also don't need to run if the screen is already on, or if the user
 							// has chosen to enable NFC on the lockscreen only and the phone is not locked
+							// TODO: Use new values locked_screen_on / screen_off / default
 							if ((currScreenState == SCREEN_STATE_ON_UNLOCKED)
-									|| (prefs.getBoolean(Common.PREF_LOCKED, true)
-											&& currScreenState != SCREEN_STATE_ON_LOCKED))
-							{
+									|| (enableNfcWhen.equals("locked_screen_on")
+											&& currScreenState != SCREEN_STATE_ON_LOCKED)) {
 								XposedHelpers.setAdditionalInstanceField(param.thisObject, "mOrigScreenState", -1);
 								return;
 							}
@@ -362,8 +401,7 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 							// we are in applyRouting, set the flag NeedScreenOnState to true
 							XposedHelpers.setAdditionalInstanceField(param.thisObject, "NeedScreenOnState", true);
 
-							synchronized (param.thisObject) // Not sure if this is correct, but NfcService.java insists on having accesses to the mScreenState variable synchronized, so I'm doing the same here
-							{
+							synchronized (param.thisObject) { // Not sure if this is correct, but NfcService.java insists on having accesses to the mScreenState variable synchronized, so I'm doing the same here
 								XposedHelpers.setAdditionalInstanceField(param.thisObject, "mOrigScreenState", XposedHelpers.getIntField(param.thisObject, "mScreenState"));
 								XposedHelpers.setIntField(param.thisObject, "mScreenState", SCREEN_STATE_ON_UNLOCKED);
 							}
@@ -375,6 +413,10 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 					@Override
 					protected void afterHookedMethod(MethodHookParam param) throws Throwable {
 						try {
+							final String enableNfcWhen = prefs.getString(Common.PREF_ENABLE_NFC_WHEN, "locked_screen_on");
+							if (enableNfcWhen.equals("unlocked"))
+								return;
+
 							// exit from applyRouting, set the flag NeedScreenOnState to false
 							XposedHelpers.setAdditionalInstanceField(param.thisObject, "NeedScreenOnState", false);
 
@@ -417,8 +459,6 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 					XposedBridge.log("Not hooking class .nxp.NativeNfcTag$PresenceCheckWatchdog");
 			}
 		}
-
-
 
 		if (lpparam.packageName.equals("android")) {
 			final int currentapiVersion = android.os.Build.VERSION.SDK_INT;
@@ -463,7 +503,6 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 					}
 				});
 			} catch (ClassNotFoundError e) {
-
 			} catch (NoSuchFieldError e) {}
 
 

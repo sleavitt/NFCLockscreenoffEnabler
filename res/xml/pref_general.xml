@@ -1,9 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-    <Preference android:title="@string/app_name" android:summary="@string/copyright_summary" android:key="copyright_key" /><ListPreference android:entries="@array/pref_lockstate_titles" android:entryValues="@array/pref_lockstate_values" android:key="enable_nfc_for_lock_state" android:title="@string/pref_title_enable_nfc_for_lock_state" />
-    <CheckBoxPreference android:title="@string/TaglostMessage" android:key="TagLostDetecting" android:summary="@string/pref_description_enable_tag_lost_detection"/><CheckBoxPreference android:title="@string/play_tag_lost_sound" android:key="should_play_tag_lost_sound" android:summary="@string/pref_description_play_tag_lost_sound" />
-    <EditTextPreference android:key="presence_check_timeout" android:title="@string/pref_title_presence_check_timeout" android:summary="@string/pref_description_presence_check_timeout" android:inputType="number" android:defaultValue="2000" android:dialogMessage="@string/pref_dialog_description_presence_check_timeout" android:dialogTitle="@string/pref_title_presence_check_timeout"/>
-    
-    <Preference android:title="@string/authorized_nfc_tags_title" android:summary="@string/authorized_nfc_tags_description" android:key="nfc_tags"/><CheckBoxPreference android:title="@string/pref_title_debug_mode" android:key="debug_mode" android:summary="@string/pref_description_debug_mode" android:defaultValue="true" />
-    
+
+    <Preference
+        android:key="copyright_key"
+        android:summary="@string/copyright_summary"
+        android:title="@string/app_name" />
+
+    <ListPreference
+        android:defaultValue="locked_screen_on"
+        android:entries="@array/pref_lockstate_titles"
+        android:entryValues="@array/pref_lockstate_values"
+        android:key="enable_nfc_for_lock_state"
+        android:title="@string/pref_title_enable_nfc_for_lock_state" />
+
+    <CheckBoxPreference
+        android:key="TagLostDetecting"
+        android:summary="@string/pref_description_enable_tag_lost_detection"
+        android:title="@string/TaglostMessage" />
+
+    <MultiSelectListPreference
+        android:defaultValue="@array/pref_default_sounds_to_play"
+        android:entries="@array/pref_sounds_to_play_entries"
+        android:entryValues="@array/pref_sounds_to_play_values"
+        android:key="nfc_sounds_to_play"
+        android:summary="@string/nfc_sounds_to_play_description"
+        android:title="@string/nfc_sounds_to_play" />
+
+    <EditTextPreference
+        android:defaultValue="2000"
+        android:dialogMessage="@string/pref_dialog_description_presence_check_timeout"
+        android:dialogTitle="@string/pref_title_presence_check_timeout"
+        android:inputType="number"
+        android:key="presence_check_time_out"
+        android:summary="@string/pref_description_presence_check_timeout"
+        android:title="@string/pref_title_presence_check_timeout" />
+
+    <Preference
+        android:key="nfc_tags"
+        android:summary="@string/authorized_nfc_tags_description"
+        android:title="@string/authorized_nfc_tags_title" />
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="debug_mode"
+        android:summary="@string/pref_description_debug_mode"
+        android:title="@string/pref_title_debug_mode" />
+
 </PreferenceScreen>

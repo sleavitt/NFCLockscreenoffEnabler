@@ -4,13 +4,18 @@ public class Common {
 	public static final String SETTINGS_UPDATED_INTENT = "pk.qwerty12.nfclockscreenoffenabler.SETTINGS_UPDATED";
 
 	public static final String PREFS = "NFCModSettings";
+	@Deprecated
 	public static final String PREF_LOCKED = "On_Locked";
 	public static final String PREF_TAGLOST = "TagLostDetecting";
-	public static final String PREF_PRESENCE_CHECK_TIMEOUT = "presence_check_timeout";
+	@Deprecated
+	public static final String PREF_PRESENCE_CHECK_TIMEOUT_OLD = "presence_check_timeout";
+	public static final String PREF_PRESENCE_CHECK_TIMEOUT = "presence_check_time_out";
 	public static final String PREF_DEBUG_MODE = "debug_mode";
 	public static final String PREF_PLAY_TAG_LOST_SOUND = "should_play_tag_lost_sound";
 	public static final String PREF_NFC_KEYS = "authorized_nfc_tag_uuids";
 	public static final String PREF_NFC_KEYS_NAMES = "authorized_nfc_tag_friendly_names";
+	public static final String PREF_SOUNDS_TO_PLAY = "nfc_sounds_to_play";
+	public static final String PREF_ENABLE_NFC_WHEN = "enable_nfc_for_lock_state";
 
 	/* -- */
 	public static final String PACKAGE_NFC = "com.android.nfc";
@@ -23,6 +28,8 @@ public class Common {
 
 	// The intent above is replaced by the one below if the above is used with adb.
 	public static final String INTENT_UNLOCK_INTERCEPTED = "pk.qwerty12.nfclockscreenoffenabler.UNLOCK_ATTEMPT_INTERCEPTED";
+
+
 
 	// Converting byte[] to hex string, used to convert NFC UUID to String
 	public static String byteArrayToHexString(byte [] inarray) {
