@@ -60,6 +60,9 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 	private boolean mDebugMode = true;
 	protected Object mViewMediatorCallback;
 
+	// Prevent multiple registers.
+	private boolean mBroadcastReceiverRegistered = false;
+
 	private static Object mKeyguardSecurityCallbackInstance;
 
 	private void log(String TAG, String message) {
@@ -428,8 +431,19 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 					className = "com.android.internal.policy.impl.keyguard.KeyguardHostView";
 				}
 
-				Class<?> KeyguardHostView = findClass(className, lpparam.classLoader);
-				XposedBridge.hookAllConstructors(KeyguardHostView, new XC_MethodHook() {
+				Class<?> ClassToHook = findClass(className, lpparam.classLoader);
+
+				// public KeyguardHostView(Context context, AttributeSet attrs)
+				// public LockPatternKeyguardView(Context context, KeyguardViewCallback callback,
+				//        KeyguardUpdateMonitor updateMonitor, LockPatternUtils lockPatternUtils,
+				//        KeyguardWindowController controller)
+
+				// Class KeyguardHostView on 4.2+ has mCallback of type KeyguardSecurityCallback,
+				// while 4.1- has mKeyguardScreenCallback of type KeyguardScreenCallback.
+				// Both of which have a method called reportSuccessfulUnlockAttempt() that
+				// should be the first step in unlocking the device.
+
+				XposedBridge.hookAllConstructors(ClassToHook, new XC_MethodHook() {
 					@Override
 					protected void afterHookedMethod(MethodHookParam param) throws Throwable {
 						String fieldName;
@@ -444,12 +458,7 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 									getObjectField(param.thisObject, fieldName);
 						} catch (NoSuchFieldError e) {}
 
-						Context context;
-						try {
-							context = (Context) getObjectField(param.thisObject, "mContext");
-						} catch (NoSuchFieldError e) {
-							context = (Context) param.args[0];
-						}
+						Context context = (Context) param.args[0];
 						registerNfcUnlockReceivers(context);
 					}
 				});
@@ -457,6 +466,9 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 
 			} catch (NoSuchFieldError e) {}
 
+
+			// The classes and field names were renamed and moved around between 4.1 and 4.2,
+			// the bits we're interested in stayed the same though.
 			try {
 				String className;		
 				if (currentapiVersion < android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -492,6 +504,13 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 	private void registerNfcUnlockReceivers(Context context) {
 		if (context == null)
 			return;
+
+		// *facepalm* previous versions probably leaked memory right here in this very method.
+		if (mBroadcastReceiverRegistered)
+			return;
+
+		mBroadcastReceiverRegistered = true;
+
 		BroadcastReceiver receiver = new BroadcastReceiver() {				
 			@Override
 			public void onReceive(Context context, Intent intent) {
