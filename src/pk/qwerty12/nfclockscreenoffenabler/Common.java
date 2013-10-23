@@ -1,7 +1,9 @@
 package pk.qwerty12.nfclockscreenoffenabler;
 
 public class Common {
-	public static final String SETTINGS_UPDATED_INTENT = "pk.qwerty12.nfclockscreenoffenabler.SETTINGS_UPDATED";
+	public static final String MOD_PACKAGE_NAME = "pk.qwerty12.nfclockscreenoffenabler";
+	
+	public static final String SETTINGS_UPDATED_INTENT = MOD_PACKAGE_NAME + ".SETTINGS_UPDATED";
 
 	public static final String PREFS = "NFCModSettings";
 	@Deprecated
@@ -24,10 +26,10 @@ public class Common {
 	public static final String ACTION_TAG_LOST = "android.nfc.action.TAG_LOST";
 
 	// Intent used internally in this module to unlock the device.
-	public static final String INTENT_UNLOCK_DEVICE = "pk.qwerty12.nfclockscreenoffenabler.UNLOCK_DEVICE";
+	public static final String INTENT_UNLOCK_DEVICE = MOD_PACKAGE_NAME + ".UNLOCK_DEVICE";
 
 	// The intent above is replaced by the one below if the above is used with adb.
-	public static final String INTENT_UNLOCK_INTERCEPTED = "pk.qwerty12.nfclockscreenoffenabler.UNLOCK_ATTEMPT_INTERCEPTED";
+	public static final String INTENT_UNLOCK_INTERCEPTED = MOD_PACKAGE_NAME + ".UNLOCK_ATTEMPT_INTERCEPTED";
 
 	// Converting byte[] to hex string, used to convert NFC UUID to String
 	public static String byteArrayToHexString(byte [] inarray) {

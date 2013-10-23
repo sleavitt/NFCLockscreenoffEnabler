@@ -6,10 +6,12 @@ import java.util.Set;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
@@ -130,6 +132,23 @@ public class NFCLockScreenOffEnablerActivity extends PreferenceActivity {
 			public boolean onPreferenceClick(Preference preference) {
 				startActivity(new Intent(NFCLockScreenOffEnablerActivity.this, NfcTags.class));
 				return false;
+			}
+		});
+
+		findPreference("show_in_launcher").setOnPreferenceChangeListener(new OnPreferenceChangeListener() {	
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				// Thanks to Chainfire for this
+				// http://www.chainfire.eu/articles/133/_TUT_Supporting_multiple_icons_in_your_app/
+				PackageManager pm = getPackageManager();
+				pm.setComponentEnabledSetting(
+						new ComponentName(getApplicationContext(), Common.MOD_PACKAGE_NAME + ".Activity-Launcher"), 
+						(Boolean) newValue ? 
+								PackageManager.COMPONENT_ENABLED_STATE_ENABLED : 
+									PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 
+									PackageManager.DONT_KILL_APP
+						);
+				return true;
 			}
 		});
 	}
