@@ -10,7 +10,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
-import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
@@ -23,13 +22,19 @@ import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcA;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.haarman.listviewanimations.itemmanipulation.OnDismissCallback;
@@ -188,6 +193,7 @@ public class NfcTags extends Activity {
 
 		AlertDialog dialog = createAskForNameDialog(uuid);
 		dialog.show();
+		dialog.getWindow().setSoftInputMode (WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 		mDialogShowing = true;
 	}
 
@@ -203,6 +209,8 @@ public class NfcTags extends Activity {
 		params.setMargins(20, 0, 30, 0);
 
 		final EditText input = new EditText(this);
+		input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+		input.requestFocus();
 		layout.addView(input);
 		builder.setView(layout);
 
@@ -213,6 +221,7 @@ public class NfcTags extends Activity {
 				if (TextUtils.isEmpty(name))
 					name = getString(R.string.unnamed_tag);
 				mArrayAdapter.add(new NfcTag(uuid, name));
+				mDialogShowing = false;
 				dialog.dismiss();
 				return;
 			}
@@ -221,6 +230,7 @@ public class NfcTags extends Activity {
 		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
+				mDialogShowing = false;
 				dialog.dismiss();
 				return;
 			}
@@ -229,18 +239,20 @@ public class NfcTags extends Activity {
 		builder.setOnCancelListener(new OnCancelListener() {
 			@Override
 			public void onCancel(DialogInterface dialog) {
+				mDialogShowing = false;
 				dialog.dismiss();
 			}
 		});
 
-		builder.setOnDismissListener(new OnDismissListener() {	
-			@Override
-			public void onDismiss(DialogInterface dialog) {
-				mDialogShowing = false;
+		final AlertDialog dialog = builder.create();
+		input.setOnEditorActionListener(new OnEditorActionListener() {
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
+					dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+				}
+				return false;
 			}
 		});
-
-		AlertDialog dialog = builder.create();
 		return dialog;
 	}
 }

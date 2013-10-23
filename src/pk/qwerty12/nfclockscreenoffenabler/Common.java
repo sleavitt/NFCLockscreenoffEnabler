@@ -29,8 +29,6 @@ public class Common {
 	// The intent above is replaced by the one below if the above is used with adb.
 	public static final String INTENT_UNLOCK_INTERCEPTED = "pk.qwerty12.nfclockscreenoffenabler.UNLOCK_ATTEMPT_INTERCEPTED";
 
-
-
 	// Converting byte[] to hex string, used to convert NFC UUID to String
 	public static String byteArrayToHexString(byte [] inarray) {
 		int i, j, in;
