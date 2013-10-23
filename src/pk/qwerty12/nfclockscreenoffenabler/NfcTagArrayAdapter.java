@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.haarman.listviewanimations.ArrayAdapter;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 public class NfcTagArrayAdapter extends ArrayAdapter<NfcTag> {
@@ -17,7 +18,7 @@ public class NfcTagArrayAdapter extends ArrayAdapter<NfcTag> {
 	private ArrayList<NfcTag> mNfcTags = null;
 
 	public NfcTagArrayAdapter(Context context, int resource, ArrayList<NfcTag> nfcTags) {
-		super(context, resource, nfcTags);
+		super(nfcTags);
 		mNfcTags = nfcTags;
 		mContext = context;
 	}

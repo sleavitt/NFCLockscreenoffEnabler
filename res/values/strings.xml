@@ -43,5 +43,7 @@
     <string name="nfc_sound_error">Error sound</string>
     <string name="nfc_sound_taglost">Tag lost sound</string>
     <string name="settings_migrated">Settings migration successful</string>
+    <string name="undo">Undo</string>
+    <string name="tag_unauthorized">Tag deauthorized</string>
 
 </resources>

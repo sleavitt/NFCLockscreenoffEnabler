@@ -3,6 +3,8 @@ package pk.qwerty12.nfclockscreenoffenabler;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import pk.qwerty12.nfclockscreenoffenabler.UndoBarController.UndoListener;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -22,6 +24,7 @@ import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcA;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -40,7 +43,7 @@ import android.widget.Toast;
 import com.haarman.listviewanimations.itemmanipulation.OnDismissCallback;
 import com.haarman.listviewanimations.itemmanipulation.SwipeDismissAdapter;
 
-public class NfcTags extends Activity {
+public class NfcTags extends Activity implements UndoListener {
 
 	private SharedPreferences mPrefs = null;
 	private NfcAdapter mNfcAdapter = null;
@@ -51,6 +54,7 @@ public class NfcTags extends Activity {
 	private ListView mListView = null;
 	private NfcTagArrayAdapter mArrayAdapter;
 	private boolean mDialogShowing = false;
+	private UndoBarController mUndoBarController;
 
 	@SuppressLint("WorldReadableFiles")
 	@SuppressWarnings("deprecation")
@@ -65,6 +69,7 @@ public class NfcTags extends Activity {
 		mPrefs = getSharedPreferences(Common.PREFS, Context.MODE_WORLD_READABLE);
 
 		mListView = (ListView) findViewById(R.id.listView);
+		mUndoBarController = new UndoBarController(findViewById(R.id.undobar), this);
 		setupListViewFromSet();
 	}
 
@@ -115,7 +120,9 @@ public class NfcTags extends Activity {
 			@Override
 			public void onDismiss(AbsListView listView, int[] reverseSortedPositions) {
 				for (int position : reverseSortedPositions) {
+					NfcTag tag = mArrayAdapter.getItem(position);
 					mArrayAdapter.remove(position);
+					mUndoBarController.showUndoBar(false, R.string.tag_unauthorized, tag);
 				}
 			}
 		});
@@ -254,5 +261,12 @@ public class NfcTags extends Activity {
 			}
 		});
 		return dialog;
+	}
+
+	@Override
+	public void onUndo(Parcelable token) {
+		NfcTag tag = (NfcTag) token;
+		mArrayAdapter.add(tag);
+		mArrayAdapter.notifyDataSetChanged();
 	}
 }
