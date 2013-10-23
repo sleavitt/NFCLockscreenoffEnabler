@@ -77,4 +77,23 @@ public class NfcTagArrayAdapter extends ArrayAdapter<NfcTag> {
 		NfcTag tag = getItem(position);
 		remove(tag);
 	}
+
+	/* Fixes out of bounds exception when using com.haarman.listviewanimations.ArrayAdapter
+	 * (non-Javadoc)
+	 * @see com.haarman.listviewanimations.ArrayAdapter#add(java.lang.Object)
+	 * 
+	 * Apparently the add method doesn't update the linked ArrayList.
+	 */
+	@Override
+	public void add(NfcTag item) {
+		mNfcTags.add(item);
+		super.add(item);
+	}
+
+	/* Just to be sure */
+	@Override
+	public void remove(NfcTag item) {
+		mNfcTags.remove(item);
+		super.remove(item);
+	}
 }
