@@ -19,6 +19,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
+import android.nfc.tech.IsoDep;
 import android.nfc.tech.MifareClassic;
 import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.Ndef;
@@ -179,8 +180,11 @@ public class NfcTags extends Activity implements UndoListener {
 			throw new RuntimeException("fail", e);
 		}
 		mIntentFiltersArray = new IntentFilter[] {ndef};
-		mTechListsArray = new String[][] { new String[] { MifareUltralight.class.getName(), Ndef.class.getName(), NfcA.class.getName()},
-				new String[] { MifareClassic.class.getName(), Ndef.class.getName(), NfcA.class.getName()}};
+		mTechListsArray = new String[][] {
+			new String[] { IsoDep.class.getName(), Ndef.class.getName(), NfcA.class.getName()},
+			new String[] { MifareUltralight.class.getName(), Ndef.class.getName(), NfcA.class.getName()},
+			new String[] { MifareClassic.class.getName(), Ndef.class.getName(), NfcA.class.getName()}
+		};
 
 		mAlreadySetup = true;
 	}
