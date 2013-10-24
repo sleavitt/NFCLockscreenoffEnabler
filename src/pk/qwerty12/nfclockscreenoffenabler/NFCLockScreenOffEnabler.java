@@ -24,7 +24,6 @@ import android.content.pm.ResolveInfo;
 import android.content.res.XModuleResources;
 import android.media.SoundPool;
 import android.nfc.NfcAdapter;
-import android.os.UserHandle;
 import android.util.Log;
 import de.robv.android.xposed.IXposedHookCmdInit;
 import de.robv.android.xposed.IXposedHookLoadPackage;
@@ -212,10 +211,17 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 			} catch (NoSuchMethodError e) {}
 
 			// Doesn't exist on pre-4.2
-			try {
-				findAndHookMethod(ContextImpl, "sendBroadcastAsUser", Intent.class, UserHandle.class, hook);
-				findAndHookMethod(ContextImpl, "sendBroadcastAsUser", Intent.class, UserHandle.class, String.class, hook);
-			} catch (NoSuchMethodError e) {}
+			int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+			if (currentapiVersion >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1){
+				Class<?> UserHandle = findClass("android.os.UserHandle", null);
+
+				if (UserHandle != null) {
+					try {
+						findAndHookMethod(ContextImpl, "sendBroadcastAsUser", Intent.class, UserHandle, hook);
+						findAndHookMethod(ContextImpl, "sendBroadcastAsUser", Intent.class, UserHandle, String.class, hook);
+					} catch (NoSuchMethodError e) {}
+				}
+			}
 		} catch (ClassNotFoundError e) {}
 	}
 
