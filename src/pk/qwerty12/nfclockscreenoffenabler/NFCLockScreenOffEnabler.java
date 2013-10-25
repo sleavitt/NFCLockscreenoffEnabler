@@ -628,9 +628,7 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 			}
 		};
 
-		context.registerReceiver(receiver, new IntentFilter(Common.INTENT_UNLOCK_DEVICE),
-				"android.permission.INTERNAL_SYSTEM_WINDOW", null);
-
+		context.registerReceiver(receiver, new IntentFilter(Common.INTENT_UNLOCK_DEVICE));
 		context.registerReceiver(receiver, new IntentFilter(Common.INTENT_UNLOCK_INTERCEPTED));
 	}
 }
