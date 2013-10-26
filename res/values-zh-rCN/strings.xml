@@ -12,7 +12,7 @@
     <string name="pref_description_play_tag_lost_sound">一个NFC标签丢失时播放声音</string>
     <string name="pref_description_enable_tag_lost_detection">通知应用程序的NFC标签丢失</string>
     <string name="pref_title_enable_nfc_for_lock_state">启用NFC为</string>
-    <string name="copyright_summary">Copyright ? 2012-2013 – qwerty12\n点击查看贡献者</string>
+    <string name="copyright_summary">Copyright © 2012-2013 – qwerty12\n点击查看贡献者</string>
 
     <string-array name="contributors">
         <item>qwerty12 (Main developer)</item>
