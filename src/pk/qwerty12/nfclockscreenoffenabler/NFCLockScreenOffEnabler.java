@@ -119,15 +119,15 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 
 			try {
 				byte[] uId = (byte[]) XposedHelpers.callMethod(XposedHelpers.getSurroundingThis(param.thisObject), "getUid");
-				
+
 				Common.sendTagChangedBroadcast(context, uId, false);
-				
+
 				Intent intentToStart = new Intent(Common.ACTION_TAG_LOST);
 				intentToStart.putExtra(NfcAdapter.EXTRA_ID, uId);
 				intentToStart.putExtra(Common.EXTRA_ID_STRING, Common.byteArrayToHexString(uId));
-				
+
 				Common.sendBroadcast(context, intentToStart);
-				
+
 				intentToStart.setData(null);
 				intentToStart.setType(null);
 				intentToStart.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -169,7 +169,7 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 
 				if (context != null) {
 					Common.sendTagChangedBroadcast(context, uuid, true);
-					
+
 					if (authorizedNfcTags != null && authorizedNfcTags.contains(uuidString.trim())) {
 						if (mDebugMode)
 							XposedBridge.log("Got matching NFC tag, unlocking device...");

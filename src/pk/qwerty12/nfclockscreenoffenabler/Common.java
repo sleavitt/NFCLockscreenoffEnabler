@@ -30,7 +30,7 @@ public class Common {
 
 	// Intent sent when a tag is lost
 	public static final String ACTION_TAG_LOST = "android.nfc.action.TAG_LOST";
-	
+
 	/* Helper intents of Tasker */
 	public static final String ACTION_TAG_CHANGED = "android.nfc.action.TAG_CHANGED";
 
@@ -44,10 +44,10 @@ public class Common {
 	 * 
 	 * In Tasker, you can simply use the variable %tag_uuid or %tag_present
 	 */
-	
+
 	/* Used by ACTION_TAG_LOST, String extra */
 	public static final String EXTRA_ID_STRING = "tag_uuid";
-	
+
 	/* Used by ACTION_TAG_CHANGED, Boolean extra */
 	public static final String EXTRA_TAG_PRESENT = "tag_present";
 
@@ -66,7 +66,7 @@ public class Common {
 		}
 		return out;
 	}
-	
+
 	/* Helper method, on API 17 this method uses sendBroadcastAsUser to prevent
 	 * system warnings in logcat.
 	 */
@@ -79,15 +79,15 @@ public class Common {
 			context.sendBroadcast(intent);
 		}
 	}
-	
+
 	public static void sendTagChangedBroadcast(Context context, byte[] uid, boolean tagPresent) {
 		String uidString = byteArrayToHexString(uid);
-		
+
 		Intent intent = new Intent(ACTION_TAG_CHANGED);
 		intent.putExtra(EXTRA_ID_STRING, uidString);
 		intent.putExtra(NfcAdapter.EXTRA_ID, uid);
 		intent.putExtra(EXTRA_TAG_PRESENT, tagPresent);
-		
+
 		sendBroadcast(context, intent);
 	}
 }
