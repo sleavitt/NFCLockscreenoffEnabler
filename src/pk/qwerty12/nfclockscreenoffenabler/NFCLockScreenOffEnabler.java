@@ -24,7 +24,6 @@ import android.content.pm.ResolveInfo;
 import android.content.res.XModuleResources;
 import android.media.SoundPool;
 import android.nfc.NfcAdapter;
-import android.os.UserHandle;
 import android.util.Log;
 import de.robv.android.xposed.IXposedHookCmdInit;
 import de.robv.android.xposed.IXposedHookLoadPackage;
@@ -596,16 +595,17 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 				XposedBridge.log("Class not found: " + e.getMessage().toString() + " NFC Unlocking won't work");
 			}
 		}
-		
-		// for HTC
+
+		/* HTC devices have the lockscreen in a separate package, thanks to vrthe1
+		 * for the patch.
+		 */
 		if (lpparam.packageName.equals("com.htc.lockscreen") && !mBroadcastReceiverRegistered) {
 			Class<?> ClassToHook = findClass(
 					"com.htc.lockscreen.HtcKeyguardHostViewImpl",
 					lpparam.classLoader);
 			XposedBridge.hookAllConstructors(ClassToHook, new XC_MethodHook() {
 				@Override
-				protected void afterHookedMethod(MethodHookParam param)
-						throws Throwable {
+				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
 					try {
 						mKeyguardSecurityCallbackInstance = getObjectField(
 								param.thisObject, "mSecurityCallback");
