@@ -119,18 +119,15 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 
 			try {
 				byte[] uId = (byte[]) XposedHelpers.callMethod(XposedHelpers.getSurroundingThis(param.thisObject), "getUid");
+				
+				Common.sendTagChangedBroadcast(context, uId, false);
+				
 				Intent intentToStart = new Intent(Common.ACTION_TAG_LOST);
 				intentToStart.putExtra(NfcAdapter.EXTRA_ID, uId);
 				intentToStart.putExtra(Common.EXTRA_ID_STRING, Common.byteArrayToHexString(uId));
-
-				int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-				if (currentapiVersion >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
-					context.sendBroadcastAsUser(intentToStart,
-							(UserHandle) XposedHelpers.getStaticObjectField(UserHandle.class, "CURRENT"));
-				} else {
-					context.sendBroadcast(intentToStart);
-				}
-
+				
+				Common.sendBroadcast(context, intentToStart);
+				
 				intentToStart.setData(null);
 				intentToStart.setType(null);
 				intentToStart.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -161,17 +158,19 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 		@Override
 		protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 			try {
-				String uuid = Common.byteArrayToHexString(
-						(byte[]) XposedHelpers.callMethod(param.args[0], "getUid"));
+				byte[] uuid = (byte[]) XposedHelpers.callMethod(param.args[0], "getUid");
+				String uuidString = Common.byteArrayToHexString(uuid);
 
 				Set<String> authorizedNfcTags = prefs.getStringSet(Common.PREF_NFC_KEYS,
 						new HashSet<String>());
 				Context context = (Context) XposedHelpers.getObjectField(param.thisObject, "mContext");
 				if (mDebugMode)
-					XposedBridge.log(uuid.trim());
+					XposedBridge.log(uuidString.trim());
 
 				if (context != null) {
-					if (authorizedNfcTags != null && authorizedNfcTags.contains(uuid.trim())) {
+					Common.sendTagChangedBroadcast(context, uuid, true);
+					
+					if (authorizedNfcTags != null && authorizedNfcTags.contains(uuidString.trim())) {
 						if (mDebugMode)
 							XposedBridge.log("Got matching NFC tag, unlocking device...");
 						context.sendBroadcast(new Intent(Common.INTENT_UNLOCK_DEVICE));

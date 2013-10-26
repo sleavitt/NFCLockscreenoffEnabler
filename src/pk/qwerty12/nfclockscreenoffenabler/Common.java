@@ -1,5 +1,11 @@
 package pk.qwerty12.nfclockscreenoffenabler;
 
+import android.content.Context;
+import android.content.Intent;
+import android.nfc.NfcAdapter;
+import android.os.UserHandle;
+import de.robv.android.xposed.XposedHelpers;
+
 public class Common {
 	public static final String MOD_PACKAGE_NAME = "pk.qwerty12.nfclockscreenoffenabler";
 
@@ -24,6 +30,9 @@ public class Common {
 
 	// Intent sent when a tag is lost
 	public static final String ACTION_TAG_LOST = "android.nfc.action.TAG_LOST";
+	
+	/* Helper intents of Tasker */
+	public static final String ACTION_TAG_CHANGED = "android.nfc.action.TAG_CHANGED";
 
 	// Intent used internally in this module to unlock the device.
 	public static final String INTENT_UNLOCK_DEVICE = MOD_PACKAGE_NAME + ".UNLOCK_DEVICE";
@@ -32,11 +41,14 @@ public class Common {
 	public static final String INTENT_UNLOCK_INTERCEPTED = MOD_PACKAGE_NAME + ".UNLOCK_ATTEMPT_INTERCEPTED";
 
 	/* The following can be accessed in apps like Tasker.
-	 * The extra is a UUID of the tag converted to a String.
 	 * 
-	 * In Tasker, you can simply use the variable %tag_uuid
+	 * In Tasker, you can simply use the variable %tag_uuid or 
 	 */
+	/* Used by ACTION_TAG_LOST, String extra */
 	public static final String EXTRA_ID_STRING = "tag_uuid";
+	
+	/* Used by ACTION_TAG_CHANGED, Boolean extra */
+	public static final String EXTRA_TAG_PRESENT = "tag_present";
 
 	// Converting byte[] to hex string, used to convert NFC UUID to String
 	public static String byteArrayToHexString(byte [] inarray) {
@@ -52,5 +64,26 @@ public class Common {
 			out += hex[i];
 		}
 		return out;
+	}
+	
+	public static void sendBroadcast(Context context, Intent intent) {
+		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+		if (currentapiVersion >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+			context.sendBroadcastAsUser(intent, 
+					(UserHandle) XposedHelpers.getStaticObjectField(UserHandle.class, "CURRENT"));
+		} else {
+			context.sendBroadcast(intent);
+		}
+	}
+	
+	public static void sendTagChangedBroadcast(Context context, byte[] uid, boolean tagPresent) {
+		String uidString = byteArrayToHexString(uid);
+		
+		Intent intent = new Intent(ACTION_TAG_CHANGED);
+		intent.putExtra(EXTRA_ID_STRING, uidString);
+		intent.putExtra(NfcAdapter.EXTRA_ID, uid);
+		intent.putExtra(EXTRA_TAG_PRESENT, tagPresent);
+		
+		sendBroadcast(context, intent);
 	}
 }
