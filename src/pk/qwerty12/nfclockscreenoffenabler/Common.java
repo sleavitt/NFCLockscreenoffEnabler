@@ -42,8 +42,9 @@ public class Common {
 
 	/* The following can be accessed in apps like Tasker.
 	 * 
-	 * In Tasker, you can simply use the variable %tag_uuid or 
+	 * In Tasker, you can simply use the variable %tag_uuid or %tag_present
 	 */
+	
 	/* Used by ACTION_TAG_LOST, String extra */
 	public static final String EXTRA_ID_STRING = "tag_uuid";
 	
@@ -66,6 +67,9 @@ public class Common {
 		return out;
 	}
 	
+	/* Helper method, on API 17 this method uses sendBroadcastAsUser to prevent
+	 * system warnings in logcat.
+	 */
 	public static void sendBroadcast(Context context, Intent intent) {
 		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
 		if (currentapiVersion >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
