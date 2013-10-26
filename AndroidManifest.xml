@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="pk.qwerty12.nfclockscreenoffenabler"
-    android:versionCode="10"
-    android:versionName="1.9.4" >
+    android:versionCode="11"
+    android:versionName="1.9.5" >
 
     <uses-permission android:name="android.permission.NFC" />
 
@@ -51,7 +51,7 @@
             android:value="2.0*" />
         <meta-data
             android:name="xposeddescription"
-            android:value="Using the NFC LockScreenOff Enabler application, you can choose whether NFC is enabled additionally on your lockscreen or when the screen is off." />
+            android:value="Enable NFC when the screen is off, and use NFC to unlock your device" />
     </application>
 
 </manifest>
