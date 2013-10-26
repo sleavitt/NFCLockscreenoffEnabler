@@ -92,6 +92,8 @@ public class NFCLockScreenOffEnablerActivity extends PreferenceActivity {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
 				String[] contributors = getResources().getStringArray(R.array.contributors);
+				String[] translators = getResources().getStringArray(R.array.translators);
+				String translatorsTitle = getString(R.string.translators_title);
 
 				String contributorString = "";
 
@@ -99,6 +101,17 @@ public class NFCLockScreenOffEnablerActivity extends PreferenceActivity {
 					if (i != 0)
 						contributorString += "\n";
 					contributorString += "* " + contributors[i];
+				}
+				
+				if (translators.length != 0) {
+					contributorString += "\n\n";
+					contributorString += translatorsTitle + ":" + "\n";
+					
+					for (int i = 0; i < translators.length; i++) {
+						if (i != 0)
+							contributorString += "\n";
+						contributorString += "* " + translators[i];
+					}
 				}
 
 				AlertDialog.Builder alertDialog = new AlertDialog.Builder(NFCLockScreenOffEnablerActivity.this)

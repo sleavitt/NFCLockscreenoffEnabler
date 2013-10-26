@@ -18,6 +18,12 @@
         <item>qwerty12 (Main developer)</item>
         <item>madfish73 (Tag lost support)</item>
         <item>MohammadAG (NFC Unlocking / Minor tweaks)</item>
+        <item>sleavitt (TecTile and 4.1 support)</item>
+    </string-array>
+    
+	<!-- Translators, add your names here so you're credited in the app -->
+    <string-array name="translators" translatable="false">
+        <item>liveasx (Chinese / 汉语)</item>
     </string-array>
 
     <string name="contributors_title">Contributors</string>
@@ -47,5 +53,6 @@
     <string name="settings_migrated">Settings migration successful</string>
     <string name="undo">Undo</string>
     <string name="tag_unauthorized">Tag deauthorized</string>
+    <string name="translators_title">Translators</string>
 
 </resources>
