@@ -14,10 +14,12 @@
     <string name="pref_title_enable_nfc_for_lock_state">启用NFC为</string>
     <string name="copyright_summary">Copyright © 2012-2013 – qwerty12\n点击查看贡献者</string>
 
-    <string-array name="contributors">
-        <item>qwerty12 (Main developer)</item>
-        <item>madfish73 (Tag lost support)</item>
-        <item>MohammadAG (NFC Unlocking / Minor tweaks)</item>
+    <string-array name="contributors_how">
+        <item>Main developer</item>
+        <item>Tag lost support</item>
+        <item>NFC Unlocking / Minor tweaks</item>
+        <item>TecTile and 4.1 support</item>
+        <item>HTC One support</item>
     </string-array>
 
     <string name="contributors_title">贡献者</string>

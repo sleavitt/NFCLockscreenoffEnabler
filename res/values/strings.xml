@@ -14,11 +14,20 @@
     <string name="pref_title_enable_nfc_for_lock_state">Enable NFC when</string>
     <string name="copyright_summary">Copyright © 2012-2013 – qwerty12\nClick for contributors.</string>
 
-    <string-array name="contributors">
-        <item>qwerty12 (Main developer)</item>
-        <item>madfish73 (Tag lost support)</item>
-        <item>MohammadAG (NFC Unlocking / Minor tweaks)</item>
-        <item>sleavitt (TecTile and 4.1 support)</item>
+    <string-array name="contributors" translatable="false">
+        <item>qwerty12</item>
+        <item>madfish73</item>
+        <item>MohammadAG</item>
+        <item>sleavitt</item>
+        <item>vrthe1</item>
+    </string-array>
+    
+    <string-array name="contributors_how">
+    	<item>Main developer</item>
+    	<item>Tag lost support</item>
+    	<item>NFC Unlocking / Minor tweaks</item>    
+    	<item>TecTile and 4.1 support</item>
+    	<item>HTC One support</item>
     </string-array>
     
 	<!-- Translators, add your names here so you're credited in the app -->

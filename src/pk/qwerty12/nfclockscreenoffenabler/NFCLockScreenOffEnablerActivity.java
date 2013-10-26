@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
@@ -91,8 +92,10 @@ public class NFCLockScreenOffEnablerActivity extends PreferenceActivity {
 		mCopyrightPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				String[] contributors = getResources().getStringArray(R.array.contributors);
-				String[] translators = getResources().getStringArray(R.array.translators);
+				Resources resources = getResources();
+				String[] contributors = resources.getStringArray(R.array.contributors);
+				String[] methodsOfContribution = resources.getStringArray(R.array.contributors_how);
+				String[] translators = resources.getStringArray(R.array.translators);
 				String translatorsTitle = getString(R.string.translators_title);
 
 				String contributorString = "";
@@ -100,7 +103,8 @@ public class NFCLockScreenOffEnablerActivity extends PreferenceActivity {
 				for (int i = 0; i < contributors.length; i++) {
 					if (i != 0)
 						contributorString += "\n";
-					contributorString += "* " + contributors[i];
+					String contributor = "* %s (%s)";
+					contributorString += String.format(contributor, contributors[i], methodsOfContribution[i]);
 				}
 				
 				if (translators.length != 0) {
