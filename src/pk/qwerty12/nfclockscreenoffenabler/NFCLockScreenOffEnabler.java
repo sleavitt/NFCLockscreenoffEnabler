@@ -596,6 +596,25 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 				XposedBridge.log("Class not found: " + e.getMessage().toString() + " NFC Unlocking won't work");
 			}
 		}
+		
+		// for HTC
+		if (lpparam.packageName.equals("com.htc.lockscreen") && !mBroadcastReceiverRegistered) {
+			Class<?> ClassToHook = findClass(
+					"com.htc.lockscreen.HtcKeyguardHostViewImpl",
+					lpparam.classLoader);
+			XposedBridge.hookAllConstructors(ClassToHook, new XC_MethodHook() {
+				@Override
+				protected void afterHookedMethod(MethodHookParam param)
+						throws Throwable {
+					try {
+						mKeyguardSecurityCallbackInstance = getObjectField(
+								param.thisObject, "mSecurityCallback");
+					} catch (NoSuchFieldError e) {}
+					Context context = (Context) param.args[0];
+					registerNfcUnlockReceivers(context);
+				}
+			});
+		}
 	}
 
 	private void registerNfcUnlockReceivers(Context context) {
