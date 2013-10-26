@@ -42,7 +42,7 @@
     <string name="new_tag_detected">Nouvelle balise NFC détectée</string>
     <string name="type_in_name_for_tag">Donner un nom à la balise :</string>
     <string name="nfc_sounds_to_play">Sons NFC à jouer</string>
-    <string name="nfc_sounds_to_play_description">Choisissez le son qui devra être joué lorsque des évènements NFS se produirons</string>
+    <string name="nfc_sounds_to_play_description">Choisissez le son qui devra être joué lorsque des évènements NFC se produirons</string>
     <string name="nfc_sound_start">Son de début</string>
     <string name="nfc_sound_end">Son de fin</string>
     <string name="nfc_sound_error">Son d\'erreur</string>
