@@ -4,6 +4,7 @@
     <string name="app_name">NFC锁屏开启</string>
     <string name="menu_settings">设置</string>
     <string name="NfcScreenOptionsTitle">启用NFC，除了正常使用屏幕时，当：</string>
+    <string name="device_unlocked">screen on, device unlocked</string>
     <string name="LockedScreenOn">手机被锁定，但屏幕上</string>
     <string name="ScreenOff">屏幕关闭（不管锁定状态）</string>
     <string name="DisablePluginTips">有NFC行为回报为默认值（仅启用时，屏幕上的手机解锁），无论是卸载这个mod或禁用Xposed安装这个模块。</string>
@@ -29,6 +30,8 @@
     <string name="pref_dialog_description_presence_check_timeout">更改超时时，该设备被放置在一个NFC标签的检查。较高的值表示较低的电池消耗，而设备上的标签值。单位为毫秒（1秒=1000毫秒）</string>
     <string name="pref_title_debug_mode">调试模式</string>
     <string name="pref_description_debug_mode">显示调试错误消息</string>
+    <string name="pref_title_show_in_launcher">Show icon in launcher</string>
+    <string name="pref_description_show_in_launcher">Disabling this hides the icon from the launcher, open settings by tapping the module in Xposed Installer</string>
     <string name="title_activity_nfc_tags">授权NFC标签</string>
     <string name="action_settings">设置</string>
     <string name="authorized_nfc_tags_title">授权NFC标签</string>
@@ -45,5 +48,8 @@
     <string name="nfc_sound_error">错误声音</string>
     <string name="nfc_sound_taglost">标签失败声音</string>
     <string name="settings_migrated">设置迁移成功</string>
+    <string name="undo">复原</string>
+    <string name="tag_unauthorized">Tag deauthorized</string>
+    <string name="translators_title">翻译</string>
 
 </resources>
