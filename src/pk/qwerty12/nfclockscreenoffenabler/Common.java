@@ -2,7 +2,7 @@ package pk.qwerty12.nfclockscreenoffenabler;
 
 public class Common {
 	public static final String MOD_PACKAGE_NAME = "pk.qwerty12.nfclockscreenoffenabler";
-	
+
 	public static final String SETTINGS_UPDATED_INTENT = MOD_PACKAGE_NAME + ".SETTINGS_UPDATED";
 
 	public static final String PREFS = "NFCModSettings";
@@ -30,6 +30,13 @@ public class Common {
 
 	// The intent above is replaced by the one below if the above is used with adb.
 	public static final String INTENT_UNLOCK_INTERCEPTED = MOD_PACKAGE_NAME + ".UNLOCK_ATTEMPT_INTERCEPTED";
+
+	/* The following can be accessed in apps like Tasker.
+	 * The extra is a UUID of the tag converted to a String.
+	 * 
+	 * In Tasker, you can simply use the variable %tag_uuid
+	 */
+	public static final String EXTRA_ID_STRING = "tag_uuid";
 
 	// Converting byte[] to hex string, used to convert NFC UUID to String
 	public static String byteArrayToHexString(byte [] inarray) {

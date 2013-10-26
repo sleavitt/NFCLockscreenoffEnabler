@@ -24,6 +24,7 @@ import android.content.pm.ResolveInfo;
 import android.content.res.XModuleResources;
 import android.media.SoundPool;
 import android.nfc.NfcAdapter;
+import android.os.UserHandle;
 import android.util.Log;
 import de.robv.android.xposed.IXposedHookCmdInit;
 import de.robv.android.xposed.IXposedHookLoadPackage;
@@ -118,12 +119,21 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 
 			try {
 				byte[] uId = (byte[]) XposedHelpers.callMethod(XposedHelpers.getSurroundingThis(param.thisObject), "getUid");
-				Intent intentToStart = new Intent();
+				Intent intentToStart = new Intent(Common.ACTION_TAG_LOST);
 				intentToStart.putExtra(NfcAdapter.EXTRA_ID, uId);
+				intentToStart.putExtra(Common.EXTRA_ID_STRING, Common.byteArrayToHexString(uId));
+
+				int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+				if (currentapiVersion >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+					context.sendBroadcastAsUser(intentToStart,
+							(UserHandle) XposedHelpers.getStaticObjectField(UserHandle.class, "CURRENT"));
+				} else {
+					context.sendBroadcast(intentToStart);
+				}
+
 				intentToStart.setData(null);
 				intentToStart.setType(null);
 				intentToStart.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-				intentToStart.setAction(Common.ACTION_TAG_LOST);
 
 				PackageManager packageManager = context.getPackageManager();
 
@@ -212,15 +222,17 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 
 			// Doesn't exist on pre-4.2
 			int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-			if (currentapiVersion >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1){
-				Class<?> UserHandle = findClass("android.os.UserHandle", null);
+			if (currentapiVersion >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+				try {
+					Class<?> UserHandle = findClass("android.os.UserHandle", null);
 
-				if (UserHandle != null) {
-					try {
-						findAndHookMethod(ContextImpl, "sendBroadcastAsUser", Intent.class, UserHandle, hook);
-						findAndHookMethod(ContextImpl, "sendBroadcastAsUser", Intent.class, UserHandle, String.class, hook);
-					} catch (NoSuchMethodError e) {}
-				}
+					if (UserHandle != null) {
+						try {
+							findAndHookMethod(ContextImpl, "sendBroadcastAsUser", Intent.class, UserHandle, hook);
+							findAndHookMethod(ContextImpl, "sendBroadcastAsUser", Intent.class, UserHandle, String.class, hook);
+						} catch (NoSuchMethodError e) {}
+					}
+				} catch (ClassNotFoundError e) {}
 			}
 		} catch (ClassNotFoundError e) {}
 	}
@@ -406,7 +418,7 @@ public class NFCLockScreenOffEnabler implements IXposedHookZygoteInit, IXposedHo
 
 			try {
 				if (mIsOemStupid) {
-					/* The subject seems to be have shown signs of intelligence here.
+					/* The subject seems to have shown signs of intelligence here.
 					 * LG's implementation of NFC supports NFC while screen is off/locked.
 					 * This might be because of their weird NFC sending feature, or not.
 					 */
